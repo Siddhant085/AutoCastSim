@@ -120,6 +120,7 @@ class Sched(object):
                 blockage_vector = {}
                 for vid in range(Utils.View):
                     blockage_vector[vid+1] = 1
+                #object_interest_vector = np.ones(shape=[len(dR_Beacon.detected_object_list)])
                 object_interest_vector = np.ones(shape=[len(dR_Beacon.detected_object_list)])
                 """AutoCast settings"""
                 if not Utils.AGNOSTIC:
@@ -133,7 +134,7 @@ class Sched(object):
                     if Utils.object_oriented_sharing:
                         for detected_object in dR_Beacon.detected_object_list:
                             # detected_object.print()
-                            dO_size_map[PeerIds_map[dR_Id]].append(len(detected_object.point_cloud_list))
+                            dO_size_map[PeerIds_map[dR_Id]].append(detected_object.len_point_cloud_list)
                             dO_actorId_map[PeerIds_map[dR_Id]].append(detected_object.actor_id)
                     else:
                         print(dR_Beacon.cached_sensor_view_size)

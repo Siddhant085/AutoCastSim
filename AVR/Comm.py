@@ -11,13 +11,13 @@ from AVR import Utils, Sched
 import numpy as np
 import carla
 import queue
-
+import sys
+from AVR import Radio
 
 beacon_topic = "Beacon" # must be the same as the data structure name
 data_topic = "Data"
 broker = "localhost"
-
-
+radio = Radio.Radio()
 
 
 #python json stringingfy can't tolerate embbeded objects..... everything to basic type
@@ -142,7 +142,6 @@ class SessionState(object):
         self.InSession = False
         self.InSessionLock.release()
 
-
 class Comm(object):
     def __init__(self, _parent_collaborator, _topic):
         self.parent_collaborator = _parent_collaborator
@@ -154,12 +153,8 @@ class Comm(object):
         self.sess = SessionState()
         self.scheduler = Sched.Sched(self)
 
-        self.client = mqtt.Client(userdata=self)
-        self.client.on_connect = on_connect
-        self.client.on_message = on_message
-        self.client.connect(broker, port=Utils.mqtt_port)
-        self.client.loop_start()
-        self.client.subscribe(self.topic, qos=2)
+        radio.register_topic(self.id, _topic, self.on_message)
+
         self.destroyed = False
 
         self.process = threading.Thread(target=self.processMsgs)
@@ -169,17 +164,16 @@ class Comm(object):
         self.destroy()
 
     def destroy(self):
-        self.client.loop_stop()
-        self.client.disconnect()
         self.destroyed = True
-        # print("waiting for comm to join")
         self.process.join()
         print("Destoryed Comm {}-{}".format(self.id, self.topic))
 
     def pub_msg(self, content):
         msg = json.dumps(content, default=lambda o: o.__dict__)
-        # print(str(self.id) + ": Publishing " + self.topic)
-        self.client.publish(self.topic, msg, qos=2)
+        radio.pub_msg(self.topic, content)
+
+    def get_max_msg_size(self):
+        return radio.get_max_msg_size()
 
     def pub_ToBeaconList(self, beacon):
         self.parent_collaborator.agent_wrapper.append_beacon_list(beacon)
@@ -275,18 +269,7 @@ class Comm(object):
                 else:
                     if Debug:
                         print("Missing Data in this Session")
-
-
-# The callback for when the client receives a CONNACK response from the server.
-def on_connect(c, mComm, flags, rc):
-    print(str(mComm.id) + " Connected with result code " + str(rc))
-    print(str(mComm.id) + " Subscribe to " + mComm.topic)
-    # c.subscribe(userdata.topic)
-
-
-# The callback for when a PUBLISH message is received from the server.
-def on_message(c, mComm, msg):
-    m = msg.payload.decode("utf-8")
-    _content = json.loads(m, object_hook=lambda d: namedtuple(mComm.topic, d.keys())(*d.values()))
-    # print(str(mComm.id) + ": Received " + mComm.topic +" frame " + str(_content.FrameId) + " from " + str(_content.id))
-    mComm.queue.put(_content, block=False)
+    def on_message(self, m):
+        mComm = self
+        _content = json.loads(m, object_hook=lambda d: namedtuple(mComm.topic, d.keys())(*d.values()))
+        mComm.queue.put(_content, block=False)

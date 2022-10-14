@@ -9,6 +9,7 @@ import queue
 import imageio
 import os
 import open3d as o3d
+import sys
 
 
 from AVR import PCProcess, Sched, Utils, Comm
@@ -19,10 +20,12 @@ from AVR.CommLogger import CommLogger
 from AVR.PCProcess import LidarPreprocessor
 from AVR.TraceLogger import TraceLogger
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider, CarlaActorPool
+from AVR import Radio
 
 LidarSensorName = "_LIDAR"
 FusedLidarSensorName = "_FusedLidar"
 ProcessedLidarSensorName = "_ProcessedLidar"
+radio = Radio.Radio()
 
 class VehicleState(object):
     def __init__(self):
@@ -85,6 +88,7 @@ class Collaborator(object):
         self.ProcessThread = None
 
         """Comm"""
+        radio.add_vehicle(self.id)
         self.sharing_mode = sharing_mode
         self.ControlChannel = Comm.Comm(self, Comm.beacon_topic)
         self.DataChannel = Comm.Comm(self, Comm.data_topic)
@@ -156,6 +160,7 @@ class Collaborator(object):
         self.agent.sensor_interface.destroy_sensor(self.proc_lidar_id)
         self.ControlChannel.destroy()
         self.DataChannel.destroy()
+        radio.remove_vehicle(self.id)
         print("waiting for collaborator to join")
         if self.ProcessThread is not None:
             self.ProcessThread.join()
@@ -619,7 +624,11 @@ class Collaborator(object):
             print(str(self.id) + " Transmitting: " + str(points_dumb_return.shape) + " of View " + str(ItemID)
                   + " takes " + str(Utils.transmission_time_sec(points_size, Utils.Rate)))
 
-        d = Comm.Data(self.id, mState.FrameID, points_dumb_return.tolist(),
+        max_size = self.DataChannel.get_max_msg_size()
+        # Limit the len of points_dum_return to 1000 entries
+        dobj_list = points_dumb_return.tolist()[:1000]
+
+        d = Comm.Data(self.id, mState.FrameID, dobj_list,
                       myTrans.location.x, myTrans.location.y, myTrans.location.z,
                       myTrans.rotation.yaw, myTrans.rotation.pitch, myTrans.rotation.roll,
                       int(ItemID), time_ms)  # Need to be a list, not ndarray for json

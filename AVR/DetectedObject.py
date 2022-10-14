@@ -1,6 +1,23 @@
 import numpy as np
 from AVR.LidarProcessorConfig import LidarProcessorConfig
 
+class DetectedObjectSmall(object):
+    def __init__(self):
+        self.id = None
+        self.ego_id = None
+        self.len_point_cloud_list = 0
+        #self.point_cloud_list = []
+        self.bounding_box = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]  # center, dimension
+        self.actor_id = None
+    def print(self):
+        print(
+            f"Ego {self.ego_id}, "
+            f"Object {self.id} (Actor {self.actor_id}): "
+            f"{self.len_point_cloud_list} points, "
+            f"at {self.bounding_box}"
+        )
+
+
 class DetectedObject(object):
     def __init__(self, id):
         self.id = id
@@ -18,16 +35,18 @@ class DetectedObject(object):
         self.estimated_accel = None
         self.esitmated_position = None
         self.actor_id = None
-        self.obj_for_comm = ObjectForComm()
+        #self.obj_for_comm = ObjectForComm()
+        self.obj_for_comm = DetectedObjectSmall()
+
 
     def get_obj_for_comm(self):
         self.obj_for_comm.id = self.id
-        self.obj_for_comm.occupancy_grid_list = self.occupancy_grid_list
-        self.obj_for_comm.point_cloud_list = self.point_cloud_list
+        #self.obj_for_comm.occupancy_grid_list = self.occupancy_grid_list
+        self.obj_for_comm.len_point_cloud_list = len(self.point_cloud_list)
         self.obj_for_comm.bounding_box = self.bounding_box
-        self.obj_for_comm.estimated_speed = self.estimated_speed
-        self.obj_for_comm.estimated_accel = self.estimated_accel
-        self.obj_for_comm.esitmated_position = self.esitmated_position
+        #self.obj_for_comm.estimated_speed = self.estimated_speed
+        #self.obj_for_comm.estimated_accel = self.estimated_accel
+        #self.obj_for_comm.esitmated_position = self.esitmated_position
         self.obj_for_comm.actor_id = self.actor_id
         self.obj_for_comm.ego_id = self.ego_id
         return self.obj_for_comm

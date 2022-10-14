@@ -48,7 +48,7 @@ class Utils:
     CamWidth = 1280 # was 300
     CamHeight = 720 # was 200
     # vicinity threshold for waypoint eviction
-    RecordingOutput = './result/'
+    RecordingOutput = './results/'
     DebugOutput = '/BirdeyeViewDebug/'
     LidarRange = 50.0 # meters
     drivable_lane_type = carla.LaneType.Driving | carla.LaneType.Bidirectional
@@ -76,7 +76,7 @@ class Utils:
 
     # autocast_mode = False #True for selective view transmission, False for all full View
     object_oriented_sharing = True
-    # object_oriented_sharing = False
+    #object_oriented_sharing = False
 
 
 
@@ -831,3 +831,15 @@ class Utils:
             if len(args) >= 5:
                 Utils.EvalEnv.collider_accel_distance = args[4]
             print(Utils.EvalEnv.tostring())
+
+    @staticmethod
+    def is_vehicle_reachable(vehicle_a, vehicle_b):
+        pos_a = CarlaActorPool.get_actor_by_id(vehicle_a).get_location()
+        pos_b = CarlaActorPool.get_actor_by_id(vehicle_b).get_location()
+        mTrans = carla.Transform(carla.Location(x=pos_a.x, y=pos_a.y, z=pos_a.z))
+        peerTrans = carla.Transform(carla.Location(x=pos_b.x, y=pos_b.y, z=pos_b.z))
+        # Why not use distance method provided by Carla?
+        if not Utils.reachable_check(mTrans, peerTrans, 2 * Utils.HalfRadioRange):
+            # print("Out of Range")
+            return False
+        return True

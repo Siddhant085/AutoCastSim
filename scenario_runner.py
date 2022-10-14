@@ -64,9 +64,10 @@ from srunner.tools.route_parser import RouteParser
 
 # from AVR.backups.HUD import HUD
 from AVR import HUD
+from AVR import Radio
 # Version of scenario_runner
 VERSION = 0.9
-
+radio = Radio.Radio()
 
 class ScenarioRunner(object):
 
@@ -232,6 +233,7 @@ class ScenarioRunner(object):
         if self.agent_instance:
             self.agent_instance.destroy()
             self.agent_instance = None
+        radio._destroy()
 
     def _prepare_ego_vehicles(self, ego_vehicles):
         """
