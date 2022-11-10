@@ -22,7 +22,7 @@ class Port():
         self.topics = {}
         self.data_packets_sent = 0
         self.control_packets_sent = 0
-    def set_loss_rate(loss_rate):
+    def set_loss_rate(self, loss_rate):
         self.loss_rate = loss_rate
     def set_connection(self, conn):
         self.conn = conn
@@ -98,6 +98,7 @@ class Radio():
     def pub_msg(self, topic, content):
         # Wrap the content in topic so that we can put in in appropriate queue on the receiver side
         
+        id = content.id
         # Calculate and set the loss rate for the source vehicle
         rate = self.get_loss_rate(content.id)
         if self.vehicle_ports[content.id].loss_rate != rate and rate != 0.0:
@@ -122,19 +123,32 @@ class Radio():
         #stop = timeit.default_timer()
         #print("compress: %f"%(stop-start))
         
-        for _,v in self.vehicle_ports.items():            
-            try:
-                v.conn.sendto(msg, (HOST,PORT))
-                if topic == "Data":
-                    v.data_packets_sent += 1
-                else:
-                    v.control_packets_sent += 1
-            except Exception as e:
-                print("topic %s msg size %d"%(topic, len(msg)))
-                if topic == "Data":
-                    print(len(content["content"].data))
-                print(e)
-                return e
+        try:
+            v = self.vehicle_ports[id]
+            v.conn.sendto(msg, (HOST,PORT))
+            if topic == "Data":
+                v.data_packets_sent += 1
+            else:
+                v.control_packets_sent += 1
+        except Exception as e:
+            print("topic %s msg size %d"%(topic, len(msg)))
+            if topic == "Data":
+                print(len(content["content"].data))
+            print(e)
+            return e
+        # for _,v in self.vehicle_ports.items():            
+        #     try:
+        #         v.conn.sendto(msg, (HOST,PORT))
+        #         if topic == "Data":
+        #             v.data_packets_sent += 1
+        #         else:
+        #             v.control_packets_sent += 1
+        #     except Exception as e:
+        #         print("topic %s msg size %d"%(topic, len(msg)))
+        #         if topic == "Data":
+        #             print(len(content["content"].data))
+        #         print(e)
+        #         return e
         '''
         if DEBUG:
             print("pub_msg "+ topic)

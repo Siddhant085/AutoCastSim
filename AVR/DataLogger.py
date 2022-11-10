@@ -11,9 +11,10 @@ import h5py
 
 import carla
 
-from AVR import Utils
+from AVR import Utils, Radio
 from srunner.scenariomanager.carla_data_provider import CarlaActorPool, CarlaDataProvider
 
+radio = Radio()
 
 class DataLogger():
 
@@ -205,6 +206,8 @@ class DataLogger():
     def add_data_point(agent_wrapper, control, control_noise, sensor_data, state, episode_number, frame_number,
                        ego_vehicle_id_str, SaveLidarImage=False):
         episode_path = os.path.join(Utils.RecordingOutput, episode_number, 'episode_' + episode_number.zfill(5))
+        exp1_path = os.path.join(Utils.RecordingOutput, episode_number,"pl")
+        exp2_path = os.path.join(Utils.RecordingOutput, episode_number,"nc")
         if not os.path.exists(episode_path):
             os.mkdir(episode_path)
             DataLogger.write_config(episode_path)
@@ -213,6 +216,10 @@ class DataLogger():
             DataLogger.write_sensor_data(agent_wrapper, episode_path, frame_number, sensor_data,
                                          ego_vehicle_id_str=ego_vehicle_id_str,
                                          LidarImage=SaveLidarImage)
+        with open(exp1_path, 'a') as f:
+            f.write(str(radio.vehicle_ports[int(ego_vehicle_id_str)].loss_rate)+"\n")
+        with open(exp2_path, 'a') as f:
+            f.write(str(radio.get_vehicle_density(int(ego_vehicle_id_str)))+"\n")
 
     @staticmethod
     def write_config(episode_path):
