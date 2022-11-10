@@ -14,7 +14,7 @@ import carla
 from AVR import Utils, Radio
 from srunner.scenariomanager.carla_data_provider import CarlaActorPool, CarlaDataProvider
 
-radio = Radio()
+radio = Radio.Radio()
 
 class DataLogger():
 

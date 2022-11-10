@@ -73,6 +73,7 @@ python3 scenario_runner.py \
     --outputdir $OUTPUTDIR
     --commlog \
     --sharing \
+    --emulate \
     --lean \
     --hud
 fi
