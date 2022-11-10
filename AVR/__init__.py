@@ -389,7 +389,7 @@ class Utils:
         for obj in detected_object_list:
             if obj.actor_id not in actorId_points_dict:
                 actorId_points_dict[obj.actor_id] = 0
-            actorId_points_dict[obj.actor_id] += obj.len_point_cloud_list
+            actorId_points_dict[obj.actor_id] += len(obj.point_cloud_list)
             # obj.print()
         return actorId_points_dict
 
