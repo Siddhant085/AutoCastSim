@@ -147,7 +147,7 @@ class CommLogger(object):
 
         obj_size = []
         for o in beacon.detected_object_list:
-            obj_size.append([o.actor_id, len(o.point_cloud_list)])
+            obj_size.append([o.actor_id, o.len_point_cloud_list])
         msg["ObjectList"] = obj_size
         msg = json.dumps(msg, default=lambda o: o.__dict__)
 
