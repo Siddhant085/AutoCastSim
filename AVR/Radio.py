@@ -94,14 +94,31 @@ class Radio():
         self.data_packets_sent += self.vehicle_ports[vehicle_id].data_packets_sent
         self.control_packets_sent += self.vehicle_ports[vehicle_id].control_packets_sent
         del self.vehicle_ports[vehicle_id]
-
+    '''
+    def send_control_packets(self, content):
+        dest_vehicles = []
+        src_loss  = self.get_loss_rate(content.id)
+        for k,_ in self.vehicle_ports.items():
+            if Utils.is_vehicle_reachable(content.id, k):
+                dst_loss = self.get_loss_rate(k)
+                total_loss = src_loss*dst_loss
+                dest_vehicles.append(k)
+        
+        pass
+    '''
     def pub_msg(self, topic, content):
+        '''
+        if topic == "Beacon":
+            self.vehicle_ports[content.id].control_packets_sent += 1
+            self.send_control_packets(content)
+            return 
+        '''
         # Wrap the content in topic so that we can put in in appropriate queue on the receiver side
         
         id = content.id
         # Calculate and set the loss rate for the source vehicle
         rate = self.get_loss_rate(content.id)
-        if self.vehicle_ports[content.id].loss_rate != rate and rate != 0.0:
+        if Utils.LOSS_MODEL and self.vehicle_ports[content.id].loss_rate != rate and rate != 0.0:
             res = os.system("tcset  --overwrite --device lo --network 127.0.0.1 --port %d --loss %.4f"%(self.vehicle_ports[content.id].port_number, rate))
             # Sometimes tcset fails if executed frequently, retry the operation if that happens
             if res != 0:

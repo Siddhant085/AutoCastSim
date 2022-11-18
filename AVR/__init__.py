@@ -73,6 +73,7 @@ class Utils:
     LEANDATALOG = False
     DAGGERDATALOG = False
     HUDLOG = False
+    LOSS_MODEL = False
 
     # autocast_mode = False #True for selective view transmission, False for all full View
     object_oriented_sharing = True
@@ -188,6 +189,8 @@ class Utils:
                             help='Running agnostic Voronoi baseline')
         parser.add_argument('--emulate', action="store_true",
                             help='Flag to switch between emulation (slower, higher fidelity, e.g. for communication, object detection) vs simulation (fast, use carla labels)')
+        parser.add_argument('--loss_model', action="store_true",
+                            help='Enable loss model in radio communication')
         parser.add_argument('--fullpc', action="store_true",
                             help='Enable Full Point cloud sharing with 1000X bandwidth')
         parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + str(VERSION))
@@ -225,6 +228,9 @@ class Utils:
 
         if arguments.outputdir:
             Utils.RecordingOutput = arguments.outputdir
+
+        if arguments.loss_model:
+            Utils.LOSS_MODEL = True
 
         if arguments.full:
             Utils.DATALOG = True
